@@ -1,0 +1,213 @@
+{% doc %}
+    This snippet allows users to modify the amount of a product in their cart.
+
+    @param {object} variant - The variant object to be added to the cart.
+{% enddoc %}
+
+{% assign cart_item = cart.items | where: "variant_id", variant.id | first %}
+{% assign cart_amount = cart_item.quantity | default: 0 %}
+
+<add-to-cart data-variant-id="{{ variant.id }}" data-cart-amount="{{ cart_amount }}">
+    <div class="atc_form_wrapper">
+        <button id="atc_remove">
+            <span>-</span>
+        </button>
+        <input type="number" id="atc_amount" value="{{ cart_amount }}" min="0" max="99">
+        <button id="atc_add">
+            <span>+</span>
+        </button>
+    </div>
+</add-to-cart>
+
+{%  javascript  %}  
+
+class AddToCart extends HTMLElement {
+    constructor() {
+        super();
+
+        // Input data
+        this.variantId = this.getAttribute('data-variant-id');
+
+        // Elements
+        this.atcAdd = this.querySelector('#atc_add');
+        this.atcRemove = this.querySelector('#atc_remove');
+        this.atcInput = this.querySelector('#atc_amount');
+
+        // State
+        this.cartAmount = parseInt(this.getAttribute('data-cart-amount')) || 0;
+        this.state = 'active'
+        this.expanded = false;
+
+        console.log('AddToCart', this.atcAdd, this.atcRemove, this.atcInput);
+    }
+
+    // GETTERS
+    get variantId() {
+        return this._variantId;
+    }
+
+    get cartAmount() {
+        return this._cartAmount;
+    }
+
+    get state() {
+        return this._state;
+    }
+
+    get expanded() {
+        return this._expanded;
+    }
+
+    //SETTERS
+    set variantId(variantId) {
+        this._variantId = variantId;
+    }
+
+    set cartAmount(cartAmount) {
+        this._cartAmount = cartAmount;
+        this.updateCartAmount();
+    }
+
+    set state(state) {
+        this._state = state;
+        this.updateState();
+    }
+
+    set expanded(expanded) {
+        this._expanded = expanded;
+        this.updateExpanded();
+    }
+
+    // CALLBACKS
+    connectedCallback() {
+        console.log('AddToCart component connected');
+        this.addQuantityListeners();
+    }
+
+    disconnectedCallback() {
+        console.log('AddToCart component connected');
+    }
+
+    // EVENTS
+    addQuantityListeners() {
+        console.log('AddToCart component addQuantityListeners');
+        this.atcAdd.addEventListener('click', () => {
+            console.log('AddToCart component addQuantityListeners atcAdd');
+            this.changeCartAmount(this.cartAmount + 1);
+        });
+
+        this.atcRemove.addEventListener('click', () => {
+            console.log('AddToCart component addQuantityListeners atcRemove');
+            this.changeCartAmount(this.cartAmount - 1);
+        });
+
+        this.atcInput.addEventListener('focus', () => {
+            console.log('AddToCart component addQuantityListeners atcInput focus');
+            this.expanded = true;
+        });
+
+        document.addEventListener('mousedown', (event) => {
+            if (!this.contains(event.target) && this.expanded) {
+                this.expanded = false;
+            }
+        });
+    }
+
+    // HTML UPDATES
+    updateCartAmount() {
+        this.atcInput.value = this.cartAmount;
+    }
+
+    updateExpanded() {
+        console.log('AddToCart component toggleExpanded', this.expanded);
+        this.atcAdd.style.display = this.expanded ? 'block' : 'none';
+        this.atcRemove.style.display = this.expanded ? 'block' : 'none';
+    }
+
+
+    // METHODS
+    changeCartAmount(amount) {
+        console.log('AddToCart component changeCartAmount', amount);
+
+        this.state = 'loading';
+
+        var formData = new FormData();
+        formData.append(`updates[${this.variantId}]`, amount);
+
+        // call shopify ajax api to update cart
+        fetch(window.Shopify.routes.root + 'cart/update.js', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Cart updated', data);
+            this.cartAmount = data.item_count;
+        })
+        .catch(error => {
+            console.error('Error updating cart', error);
+        }).finally(() => {
+            this.state = 'active';
+        });
+    }
+
+    updateState() {
+        console.log('AddToCart component changeState', this.state);
+        switch (this.state) {
+            case 'active':
+                this.atcAdd.disabled = false;
+                this.atcRemove.disabled = false;
+                break;
+            case 'loading':
+                this.atcAdd.disabled = true;
+                this.atcRemove.disabled = true;
+                break;
+            default:
+                break;
+        }
+    }
+
+}
+customElements.define('add-to-cart', AddToCart);
+{% endjavascript %}
+
+{%  style  %}
+    .atc_form_wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #atc_add,
+    #atc_remove {
+        background-color: #000;
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        height: 2rem;
+        display: none;
+
+        &:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    }
+
+    #atc_amount {
+        width: 50px;
+        text-align: center;
+        height: 2rem;
+        border: 1px solid #000;
+        border-radius: 0px;
+        text-align: center;
+        /* Remove arrows in input field for number type */
+        -moz-appearance: textfield;
+    }
+        
+    #atc_amount::-webkit-outer-spin-button,
+    #atc_amount::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+{% endstyle %}

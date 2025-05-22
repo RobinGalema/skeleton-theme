@@ -5,9 +5,17 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/product
 {% endcomment %}
 
+{% style %}
+  .add-to-cart-wrapper {
+    margin: 3rem 0;
+  }
+{% endstyle %}
+
 <div class="product-images">
   {% for image in product.images %}
-    {% render 'image', class: 'product-image', image: image %}
+    {% render 'image'
+      , class: 'product-image'
+      , image: image %}
   {% endfor %}
 </div>
 
@@ -18,35 +26,22 @@
 </div>
 
 <div class="product-form">
-  {% form 'product', product %}
-    {% assign current_variant = product.selected_or_first_available_variant %}
 
-    <select name="id">
-      {% for variant in product.variants %}
-        <option
-          value="{{ variant.id }}"
-          {% if variant == current_variant %}
-            selected="selected"
-          {% endif %}
-        >
-          {{ variant.title }} - {{ variant.price | money }}
-        </option>
-      {% endfor %}
-    </select>
+  {% assign current_variant = product.selected_or_first_available_variant %}
 
-    <input type="text" name="quantity" min="1" value="1">
+  <div class="add-to-cart-wrapper">
+    {% render 'add-to-cart'
+      , variant: current_variant %}
+  </div>
 
-    <input type="submit" value="Add to cart">
-    {{ form | payment_button }}
-  {% endform %}
 </div>
 
 {% schema %}
-{
-  "name": "t:general.product",
-  "settings": [],
-  "disabled_on": {
-    "groups": ["header", "footer"]
+  {
+    "name": "t:general.product",
+    "settings": [],
+    "disabled_on": {
+      "groups": ["header", "footer"]
+    }
   }
-}
 {% endschema %}
