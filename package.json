@@ -1,0 +1,30 @@
+{
+  "name": "skeleton-theme",
+  "version": "1.0.0",
+  "description": "<h1 align=\"center\" style=\"position: relative;\">\r   <br>\r     <img src=\"./assets/shoppy-x-ray.svg\" alt=\"logo\" width=\"200\">\r   <br>\r   Shopify Skeleton Theme\r </h1>",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "npx @tailwindcss/cli -i ./assets/style.css -o ./assets/generated-tw.css --content './**/*.{js,json,liquid}' --watch",
+    "build-css": "cross-env NODE_ENV=production npx @tailwindcss/cli -i ./assets/style.css -o ./assets/generated-tw.css --content './**/*.{js,json,liquid}' --minify",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RobinGalema/skeleton-theme.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RobinGalema/skeleton-theme/issues"
+  },
+  "homepage": "https://github.com/RobinGalema/skeleton-theme#readme",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "tailwindcss": "^4.1.18"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "husky": "^9.1.7"
+  }
+}

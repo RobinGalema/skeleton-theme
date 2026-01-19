@@ -7,6 +7,8 @@
 {% assign cart_item = cart.items | where: "variant_id", variant.id | first %}
 {% assign cart_amount = cart_item.quantity | default: 0 %}
 
+{{ variant.id }}
+
 <add-to-cart data-variant-id="{{ variant.id }}" data-cart-amount="{{ cart_amount }}">
     <div class="atc_form_wrapper">
         <button id="atc_remove">
@@ -143,6 +145,7 @@ class AddToCart extends HTMLElement {
         .then(data => {
             console.log('Cart updated', data);
             this.cartAmount = data.item_count;
+            window.PubSub.publish('cart:updated', data);
         })
         .catch(error => {
             console.error('Error updating cart', error);

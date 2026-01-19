@@ -19,11 +19,15 @@
 
     {% # Load and preload the critical CSS %}
     {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
+    {{ 'generated-tw.css' | asset_url | stylesheet_tag: preload: true }}
 
     {% # Social, title, etc. %}
     {% render 'meta-tags' %}
 
     {{ content_for_header }}
+
+
+    <script src="{{ 'pub_sub.js' | asset_url }}" async></script>
   </head>
 
   <body>
@@ -33,4 +37,5 @@
 
     {% sections 'footer-group' %}
   </body>
+
 </html>
